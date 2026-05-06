@@ -1,0 +1,51 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing
+coverage/
+test-results/
+playwright-report/
+*.log
+
+# Production
+dist/
+build/
+.svelte-kit/
+.turbo/
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Temp files
+*.tmp
+.cache/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Package manager locks (keep pnpm-lock.yaml)
+package-lock.json
+yarn.lock
