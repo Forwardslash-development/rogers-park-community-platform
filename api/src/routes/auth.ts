@@ -138,4 +138,48 @@ auth.post('/logout', async (c) => {
   }
 });
 
+/**
+ * GET /auth/user
+ * Get current authenticated user
+ */
+auth.get('/user', async (c) => {
+  try {
+    const sessionId = getCookie(c, SESSION_CONFIG.COOKIE_NAME);
+
+    if (!sessionId) {
+      return errorResponse(
+        c,
+        ERROR_CODES.NOT_AUTHENTICATED,
+        'Not authenticated',
+        401
+      );
+    }
+
+    // Validate session and get user
+    const { session, user } = await authService.validateSession(sessionId);
+
+    if (!session || !user) {
+      return errorResponse(
+        c,
+        ERROR_CODES.NOT_AUTHENTICATED,
+        'Session expired or invalid',
+        401
+      );
+    }
+
+    return successResponse(c, {
+      user: {
+        id: user.id,
+        email: user.email,
+        display_name: user.display_name,
+        role: user.role,
+        created_at: user.created_at,
+        updated_at: user.updated_at,
+      },
+    });
+  } catch (error) {
+    return handleServiceError(c, error);
+  }
+});
+
 export default auth;
