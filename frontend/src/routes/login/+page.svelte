@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { ActionData } from './$types';
-
   export let form: ActionData;
 </script>
 
@@ -39,6 +38,10 @@
           name="password"
           required
         />
+      </div>
+
+      <div class="forgot-password-link">
+        <a href="/forgot-password">Forgot Password?</a>
       </div>
 
       <button type="submit" class="submit-button">
@@ -105,6 +108,21 @@
   input:focus {
     outline: none;
     border-color: #0066cc;
+  }
+
+  .forgot-password-link {
+    text-align: right;
+    margin-bottom: 1rem;
+  }
+
+  .forgot-password-link a {
+    color: #0066cc;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .forgot-password-link a:hover {
+    text-decoration: underline;
   }
 
   .submit-button {
