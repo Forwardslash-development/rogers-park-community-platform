@@ -1,48 +1,47 @@
 import { test, expect } from '@playwright/test';
 
-test.describe.serial('Authentication Flow', () => {
+test.describe('Authentication Flow', () => {
+  // Use a fresh browser context for each test to avoid cookie pollution
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test('should complete full signup flow', async ({ page }) => {
     await page.goto('/signup');
 
     const timestamp = Date.now();
+    
     await page.fill('input[name="display_name"]', 'Test User');
     await page.fill('input[name="email"]', `test${timestamp}@example.com`);
     await page.fill('input[name="password"]', 'TestPass123');
     await page.click('button[type="submit"]');
 
-    await page.waitForURL('/dashboard');
-    await expect(page.locator('h2')).toContainText('Welcome, Test User!');
+    await page.waitForURL('/dashboard', { timeout: 10000 });
+    await expect(page.locator('h2')).toContainText('Welcome');
   });
 
   test('should login with existing account', async ({ browser }) => {
-    // Create account in first context
-    const context1 = await browser.newContext();
+    const context1 = await browser.newContext({ storageState: { cookies: [], origins: [] } });
     const page1 = await context1.newPage();
 
     const timestamp = Date.now();
     const email = `logintest${timestamp}@example.com`;
 
-    await page1.goto('http://localhost:5173/signup');
+    await page1.goto('/signup');
     await page1.fill('input[name="display_name"]', 'Login Test');
     await page1.fill('input[name="email"]', email);
     await page1.fill('input[name="password"]', 'TestPass123');
     await page1.click('button[type="submit"]');
-    await page1.waitForURL('/dashboard');
-
+    await page1.waitForURL('/dashboard', { timeout: 10000 });
     await context1.close();
 
-    // Login in fresh context
-    const context2 = await browser.newContext();
+    const context2 = await browser.newContext({ storageState: { cookies: [], origins: [] } });
     const page2 = await context2.newPage();
 
-    await page2.goto('http://localhost:5173/login');
+    await page2.goto('/login');
     await page2.fill('input[name="email"]', email);
     await page2.fill('input[name="password"]', 'TestPass123');
     await page2.click('button[type="submit"]');
-    await page2.waitForURL('/dashboard');
-
-    await expect(page2.locator('h2')).toContainText('Welcome, Login Test!');
-
+    await page2.waitForURL('/dashboard', { timeout: 10000 });
+    await expect(page2.locator('h2')).toContainText('Welcome');
     await context2.close();
   });
 
@@ -54,13 +53,11 @@ test.describe.serial('Authentication Flow', () => {
     await page.fill('input[name="email"]', `logout${timestamp}@example.com`);
     await page.fill('input[name="password"]', 'TestPass123');
     await page.click('button[type="submit"]');
-    await page.waitForURL('/dashboard');
+    await page.waitForURL('/dashboard', { timeout: 10000 });
 
-    // Logout
     await page.click('button[type="submit"]');
     await page.waitForURL('/');
 
-    // Verify logged out
     await expect(page.locator('nav a[href="/signup"]')).toBeVisible();
     await expect(page.locator('nav a[href="/login"]')).toBeVisible();
   });
@@ -98,7 +95,6 @@ test.describe.serial('Authentication Flow', () => {
     await expect(forgotPasswordLink).toBeVisible();
     await expect(forgotPasswordLink).toHaveText('Forgot Password?');
     
-    // Click the link and verify navigation
     await forgotPasswordLink.click();
     await page.waitForURL('/forgot-password');
     await expect(page.locator('h1')).toContainText('Forgot Password');

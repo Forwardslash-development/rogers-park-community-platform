@@ -7,6 +7,10 @@
 		"src/routes/dashboard/+page.server.ts",
 		"src/routes/+layout.server.ts"
 	],
+	"/forgot-password": [
+		"src/routes/forgot-password/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
 	"/login": [
 		"src/routes/login/+page.server.ts",
 		"src/routes/+layout.server.ts"
@@ -15,8 +19,19 @@
 		"src/routes/logout/+page.server.ts",
 		"src/routes/+layout.server.ts"
 	],
+	"/resend-verification": [
+		"src/routes/resend-verification/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/reset-password": [
+		"src/routes/reset-password/+page.ts",
+		"src/routes/+layout.server.ts"
+	],
 	"/signup": [
 		"src/routes/signup/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/verify-email": [
 		"src/routes/+layout.server.ts"
 	]
 }

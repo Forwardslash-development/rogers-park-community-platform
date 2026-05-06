@@ -1,8 +1,7 @@
 // @ts-nocheck
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
-
-const API_URL = 'http://localhost:3000';
+import { apiUrl } from '$lib/config';
 
 export const load = async ({ parent }: Parameters<PageServerLoad>[0]) => {
   const { user } = await parent();
@@ -27,7 +26,7 @@ export const actions = {
       });
     }
 
-    const response = await fetch(`${API_URL}/api/v1/auth/signup`, {
+    const response = await fetch(apiUrl('/api/v1/auth/signup'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

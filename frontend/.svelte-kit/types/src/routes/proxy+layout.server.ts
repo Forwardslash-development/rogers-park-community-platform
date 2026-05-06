@@ -1,7 +1,6 @@
 // @ts-nocheck
 import type { LayoutServerLoad } from './$types';
-
-const API_URL = 'http://localhost:3000';
+import { apiUrl } from '$lib/config';
 
 export const load = async ({ cookies }: Parameters<LayoutServerLoad>[0]) => {
   const sessionCookie = cookies.get('session');
@@ -13,7 +12,7 @@ export const load = async ({ cookies }: Parameters<LayoutServerLoad>[0]) => {
   }
 
   try {
-    const response = await fetch(`${API_URL}/api/v1/auth/user`, {
+    const response = await fetch(apiUrl('/api/v1/auth/user'), {
       headers: {
         Cookie: `session=${sessionCookie}`,
       },
