@@ -4,7 +4,7 @@ import { signupSchema, loginSchema } from '@rogers-park/shared';
 import { authService } from '@/services/auth';
 import { successResponse, errorResponse, handleServiceError } from '@/utils/response';
 import { ERROR_CODES } from '@rogers-park/shared';
-import { setCookie } from 'hono/cookie';
+import { setCookie, getCookie, deleteCookie } from 'hono/cookie';
 import { SESSION_CONFIG } from '@rogers-park/shared';
 
 const auth = new Hono();
@@ -106,5 +106,36 @@ auth.post(
     }
   }
 );
+
+/**
+ * POST /auth/logout
+ * Log out and invalidate session
+ */
+auth.post('/logout', async (c) => {
+  try {
+    const sessionId = getCookie(c, SESSION_CONFIG.COOKIE_NAME);
+
+    if (!sessionId) {
+      return errorResponse(
+        c,
+        ERROR_CODES.NOT_AUTHENTICATED,
+        'Not authenticated',
+        401
+      );
+    }
+
+    // Invalidate session in database
+    await authService.invalidateSession(sessionId);
+
+    // Delete session cookie
+    deleteCookie(c, SESSION_CONFIG.COOKIE_NAME);
+
+    return successResponse(c, {
+      message: 'Logged out successfully',
+    });
+  } catch (error) {
+    return handleServiceError(c, error);
+  }
+});
 
 export default auth;
