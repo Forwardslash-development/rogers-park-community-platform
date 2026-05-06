@@ -23,10 +23,30 @@ beforeAll(async () => {
 
 afterEach(async () => {
   // Clean up test data after each test
-  await db.delete(sessions);
-  await db.delete(emailVerificationTokens);
-  await db.delete(passwordResetTokens);
-  await db.delete(users);
+  // Wrap in try-catch in case tables don't exist yet
+  try {
+    await db.delete(sessions);
+  } catch (e) {
+    // Table might not exist in all test files
+  }
+  
+  try {
+    await db.delete(emailVerificationTokens);
+  } catch (e) {
+    // Table might not exist in all test files
+  }
+  
+  try {
+    await db.delete(passwordResetTokens);
+  } catch (e) {
+    // Table might not exist in all test files
+  }
+  
+  try {
+    await db.delete(users);
+  } catch (e) {
+    // Table might not exist in all test files
+  }
 });
 
 afterAll(async () => {

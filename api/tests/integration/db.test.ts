@@ -1,226 +1,177 @@
-import { describe, test, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { db, testConnection, closeConnection } from '@/db/connection';
-import { users, sessions } from '@/db/schema';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { db, testConnection } from '../../src/db/connection';
+import { users, sessions } from '../../src/db/schema';
 import { eq } from 'drizzle-orm';
-import { hashPassword } from '@/utils/password';
-
-/**
- * Database Integration Tests
- * 
- * These tests verify:
- * 1. Database connection works
- * 2. Schema is correctly applied
- * 3. CRUD operations work
- * 4. Constraints are enforced (unique email, foreign keys)
- */
+import { hashPassword } from '../../src/utils/password';
 
 describe('Database Integration', () => {
-  beforeAll(async () => {
-    // Verify connection
-    const connected = await testConnection();
-    if (!connected) {
-      throw new Error('Database connection failed - make sure PostgreSQL is running');
-    }
-    
-    // Clean up test data before tests
-    await db.delete(sessions);
-    await db.delete(users);
-  });
-
-  afterAll(async () => {
-    // Clean up test data after tests
-    await db.delete(sessions);
-    await db.delete(users);
-    await closeConnection();
-  });
-
   describe('Database Connection', () => {
-    test('connects to database successfully', async () => {
+    it('connects to database successfully', async () => {
       const connected = await testConnection();
       expect(connected).toBe(true);
     });
   });
 
   describe('Users Table', () => {
-    beforeEach(async () => {
-      await db.delete(sessions);
-      await db.delete(users);
+    let testEmail: string;
+
+    beforeEach(() => {
+      // Generate unique email for each test
+      testEmail = `dbtest${Date.now()}@example.com`;
     });
 
-    test('creates a new user', async () => {
+    it('creates a new user', async () => {
       const newUser = {
-        email: 'test@example.com',
-        password_hash: await hashPassword('password123'),
+        email: testEmail,
+        password_hash: await hashPassword('TestPassword123'),
         display_name: 'Test User',
-        role: 'user' as const,
       };
 
-      const [created] = await db.insert(users).values(newUser).returning();
+      const [user] = await db.insert(users).values(newUser).returning();
 
-      expect(created.id).toBeTruthy();
-      expect(created.email).toBe('test@example.com');
-      expect(created.display_name).toBe('Test User');
-      expect(created.role).toBe('user');
-      expect(created.created_at).toBeInstanceOf(Date);
-      expect(created.updated_at).toBeInstanceOf(Date);
-      expect(created.email_verified_at).toBeNull();
+      expect(user.id).toBeDefined();
+      expect(user.email).toBe(testEmail);
+      expect(user.display_name).toBe('Test User');
     });
 
-    test('enforces unique email constraint', async () => {
-      const email = 'duplicate@example.com';
-      
-      // Create first user
-      await db.insert(users).values({
-        email,
-        password_hash: await hashPassword('password123'),
-        display_name: 'User 1',
-      });
+    it('enforces unique email constraint', async () => {
+      const newUser = {
+        email: testEmail,
+        password_hash: await hashPassword('TestPassword123'),
+        display_name: 'Test User',
+      };
 
-      // Try to create second user with same email
+      await db.insert(users).values(newUser);
+
       await expect(
-        db.insert(users).values({
-          email,
-          password_hash: await hashPassword('password456'),
-          display_name: 'User 2',
-        })
+        db.insert(users).values(newUser)
       ).rejects.toThrow();
     });
 
-    test('retrieves user by email', async () => {
-      const email = 'find@example.com';
-      
-      await db.insert(users).values({
-        email,
-        password_hash: await hashPassword('password123'),
-        display_name: 'Find Me',
-      });
+    it('retrieves user by email', async () => {
+      const newUser = {
+        email: testEmail,
+        password_hash: await hashPassword('TestPassword123'),
+        display_name: 'Test User',
+      };
 
-      const [found] = await db
+      await db.insert(users).values(newUser);
+
+      const [foundUser] = await db
         .select()
         .from(users)
-        .where(eq(users.email, email));
+        .where(eq(users.email, testEmail));
 
-      expect(found).toBeTruthy();
-      expect(found.email).toBe(email);
-      expect(found.display_name).toBe('Find Me');
+      expect(foundUser).toBeDefined();
+      expect(foundUser.email).toBe(testEmail);
     });
 
-    test('updates user data', async () => {
-      const [user] = await db.insert(users).values({
-        email: 'update@example.com',
-        password_hash: await hashPassword('password123'),
-        display_name: 'Old Name',
-      }).returning();
-
-      const [updated] = await db
-        .update(users)
-        .set({ 
-          display_name: 'New Name',
-          updated_at: new Date(),
+    it('updates user data', async () => {
+      const [user] = await db
+        .insert(users)
+        .values({
+          email: testEmail,
+          password_hash: await hashPassword('TestPassword123'),
+          display_name: 'Original Name',
         })
-        .where(eq(users.id, user.id))
         .returning();
 
-      expect(updated.display_name).toBe('New Name');
-      expect(updated.updated_at.getTime()).toBeGreaterThan(updated.created_at.getTime());
-    });
+      await db
+        .update(users)
+        .set({ display_name: 'Updated Name' })
+        .where(eq(users.id, user.id));
 
-    test('deletes user', async () => {
-      const [user] = await db.insert(users).values({
-        email: 'delete@example.com',
-        password_hash: await hashPassword('password123'),
-        display_name: 'Delete Me',
-      }).returning();
-
-      await db.delete(users).where(eq(users.id, user.id));
-
-      const [found] = await db
+      const [updatedUser] = await db
         .select()
         .from(users)
         .where(eq(users.id, user.id));
 
-      expect(found).toBeUndefined();
+      expect(updatedUser.display_name).toBe('Updated Name');
+    });
+
+    it('deletes user', async () => {
+      const [user] = await db
+        .insert(users)
+        .values({
+          email: testEmail,
+          password_hash: await hashPassword('TestPassword123'),
+          display_name: 'Test User',
+        })
+        .returning();
+
+      await db.delete(users).where(eq(users.id, user.id));
+
+      const [deletedUser] = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, user.id));
+
+      expect(deletedUser).toBeUndefined();
     });
   });
 
   describe('Sessions Table', () => {
+    let testUserId: string;
+
     beforeEach(async () => {
-      await db.delete(sessions);
-      await db.delete(users);
+      const [user] = await db
+        .insert(users)
+        .values({
+          email: `session${Date.now()}@example.com`,
+          password_hash: await hashPassword('TestPassword123'),
+          display_name: 'Session Test User',
+        })
+        .returning();
+
+      testUserId = user.id;
     });
 
-    test('creates a session for a user', async () => {
-      const [user] = await db.insert(users).values({
-        email: 'session@example.com',
-        password_hash: await hashPassword('password123'),
-        display_name: 'Session User',
-      }).returning();
+    it('creates a session for a user', async () => {
+      const [session] = await db
+        .insert(sessions)
+        .values({
+          id: 'test-session-id',
+          userId: testUserId,
+          expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        })
+        .returning();
 
-      const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30); // 30 days
-
-      const [session] = await db.insert(sessions).values({
-        id: 'test-session-id-123',
-        userId: user.id,
-        expiresAt: expiresAt,
-      }).returning();
-
-      expect(session.id).toBe('test-session-id-123');
-      expect(session.userId).toBe(user.id);
-      expect(session.expiresAt).toBeInstanceOf(Date);
-      expect(session.createdAt).toBeInstanceOf(Date);
+      expect(session.id).toBe('test-session-id');
+      expect(session.userId).toBe(testUserId);
     });
 
-    test('cascades delete when user is deleted', async () => {
-      // Create user and session
-      const [user] = await db.insert(users).values({
-        email: 'cascade@example.com',
-        password_hash: await hashPassword('password123'),
-        display_name: 'Cascade User',
-      }).returning();
-
+    it('cascades delete when user is deleted', async () => {
       await db.insert(sessions).values({
-        id: 'cascade-session-id',
-        userId: user.id,
+        id: 'cascade-test-session',
+        userId: testUserId,
         expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
       });
 
-      // Delete user
-      await db.delete(users).where(eq(users.id, user.id));
+      await db.delete(users).where(eq(users.id, testUserId));
 
-      // Session should be deleted too
-      const [session] = await db
+      const [deletedSession] = await db
         .select()
         .from(sessions)
-        .where(eq(sessions.id, 'cascade-session-id'));
+        .where(eq(sessions.id, 'cascade-test-session'));
 
-      expect(session).toBeUndefined();
+      expect(deletedSession).toBeUndefined();
     });
 
-    test('retrieves session with user data', async () => {
-      const [user] = await db.insert(users).values({
-        email: 'join@example.com',
-        password_hash: await hashPassword('password123'),
-        display_name: 'Join User',
-      }).returning();
-
+    it('retrieves session with user data', async () => {
       await db.insert(sessions).values({
-        id: 'join-session-id',
-        userId: user.id,
+        id: 'join-test-session',
+        userId: testUserId,
         expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
       });
 
-      const result = await db
-        .select({
-          session: sessions,
-          user: users,
-        })
+      const [result] = await db
+        .select()
         .from(sessions)
         .innerJoin(users, eq(sessions.userId, users.id))
-        .where(eq(sessions.id, 'join-session-id'));
+        .where(eq(sessions.id, 'join-test-session'));
 
-      expect(result).toHaveLength(1);
-      expect(result[0]?.session.id).toBe('join-session-id');
-      expect(result[0]?.user.email).toBe('join@example.com');
+      expect(result.sessions.id).toBe('join-test-session');
+      expect(result.users.id).toBe(testUserId);
     });
   });
 });

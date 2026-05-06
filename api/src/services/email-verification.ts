@@ -9,6 +9,11 @@ export class EmailVerificationService {
    * Create and send verification email
    */
   async sendVerificationEmail(userId: string, email: string): Promise<void> {
+    // Delete any existing tokens for this user first
+    await db
+      .delete(emailVerificationTokens)
+      .where(eq(emailVerificationTokens.userId, userId));
+
     // Generate token
     const token = generateToken();
     const hashedToken = hashToken(token);
