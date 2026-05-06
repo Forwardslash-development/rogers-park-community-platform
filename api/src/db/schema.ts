@@ -17,17 +17,18 @@ export const users = pgTable('users', {
 
 /**
  * Sessions table (Lucia)
+ * IMPORTANT: Lucia adapter expects camelCase property names
  */
 export const sessions = pgTable('sessions', {
   id: varchar('id', { length: 255 }).primaryKey(),
-  user_id: uuid('user_id')
+  userId: uuid('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  expires_at: timestamp('expires_at', {
+  expiresAt: timestamp('expires_at', {
     withTimezone: true,
     mode: 'date',
   }).notNull(),
-  created_at: timestamp('created_at').notNull().defaultNow(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
 // Type exports for TypeScript
