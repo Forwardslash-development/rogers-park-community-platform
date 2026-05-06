@@ -30,6 +30,12 @@
   "pnpm": {
     "overrides": {
       "typescript": "^5.3.0"
-    }
+    },
+    "ignoredBuiltDependencies": [
+      "argon2",
+      "es5-ext",
+      "esbuild",
+      "svelte-preprocess"
+    ]
   }
 }

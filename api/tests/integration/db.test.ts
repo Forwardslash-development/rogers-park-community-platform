@@ -1,4 +1,4 @@
-import { describe, test, expect, beforeAll, afterAll } from 'vitest';
+import { describe, test, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import { db, testConnection, closeConnection } from '@/db/connection';
 import { users, sessions } from '@/db/schema';
 import { eq } from 'drizzle-orm';
@@ -42,6 +42,11 @@ describe('Database Integration', () => {
   });
 
   describe('Users Table', () => {
+    beforeEach(async () => {
+      await db.delete(sessions);
+      await db.delete(users);
+    });
+
     test('creates a new user', async () => {
       const newUser = {
         email: 'test@example.com',
@@ -139,6 +144,11 @@ describe('Database Integration', () => {
   });
 
   describe('Sessions Table', () => {
+    beforeEach(async () => {
+      await db.delete(sessions);
+      await db.delete(users);
+    });
+
     test('creates a session for a user', async () => {
       const [user] = await db.insert(users).values({
         email: 'session@example.com',
@@ -150,14 +160,14 @@ describe('Database Integration', () => {
 
       const [session] = await db.insert(sessions).values({
         id: 'test-session-id-123',
-        user_id: user.id,
-        expires_at: expiresAt,
+        userId: user.id,
+        expiresAt: expiresAt,
       }).returning();
 
       expect(session.id).toBe('test-session-id-123');
-      expect(session.user_id).toBe(user.id);
-      expect(session.expires_at).toBeInstanceOf(Date);
-      expect(session.created_at).toBeInstanceOf(Date);
+      expect(session.userId).toBe(user.id);
+      expect(session.expiresAt).toBeInstanceOf(Date);
+      expect(session.createdAt).toBeInstanceOf(Date);
     });
 
     test('cascades delete when user is deleted', async () => {
@@ -170,8 +180,8 @@ describe('Database Integration', () => {
 
       await db.insert(sessions).values({
         id: 'cascade-session-id',
-        user_id: user.id,
-        expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
       });
 
       // Delete user
@@ -195,8 +205,8 @@ describe('Database Integration', () => {
 
       await db.insert(sessions).values({
         id: 'join-session-id',
-        user_id: user.id,
-        expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24),
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24),
       });
 
       const result = await db
@@ -205,7 +215,7 @@ describe('Database Integration', () => {
           user: users,
         })
         .from(sessions)
-        .innerJoin(users, eq(sessions.user_id, users.id))
+        .innerJoin(users, eq(sessions.userId, users.id))
         .where(eq(sessions.id, 'join-session-id'));
 
       expect(result).toHaveLength(1);
