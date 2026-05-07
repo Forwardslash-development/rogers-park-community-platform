@@ -1,8 +1,13 @@
 /**
- * @rogers-park/shared
- * Shared types, validation, and constants for the Rogers Park Community Platform
+ * Shared package exports
+ * Types, constants, and validation schemas used across frontend and API
  */
 
-export * from './types';
-export * from './validation';
+// Export all constants
 export * from './constants';
+
+// Export all types
+export * from './types';
+
+// Export all validation schemas
+export * from './validation';
