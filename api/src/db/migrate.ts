@@ -6,20 +6,25 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+const DATABASE_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/rogers_park_dev';
 
-const db = drizzle(pool);
+async function runMigrations() {
+  const pool = new Pool({
+    connectionString: DATABASE_URL,
+  });
 
-async function main() {
+  const db = drizzle(pool);
+
   console.log('Running migrations...');
+  
   await migrate(db, { migrationsFolder: './drizzle' });
+
   console.log('✅ Migrations complete!');
+  
   await pool.end();
 }
 
-main().catch((err) => {
+runMigrations().catch((err) => {
   console.error('❌ Migration failed:', err);
   process.exit(1);
 });
