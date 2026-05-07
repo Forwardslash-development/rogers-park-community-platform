@@ -125,6 +125,21 @@ export const createOrganizerSchema = z.object({
 
 export const updateOrganizerSchema = createOrganizerSchema.partial();
 
+// Auth schemas
+export const signupSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+  display_name: z
+    .string()
+    .min(VALIDATION_LIMITS.DISPLAY_NAME_MIN_LENGTH)
+    .max(VALIDATION_LIMITS.DISPLAY_NAME_MAX_LENGTH),
+});
+
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+});
+
 // Type exports (inferred from schemas)
 export type CreatePlaceInput = z.infer<typeof createPlaceSchema>;
 export type UpdatePlaceInput = z.infer<typeof updatePlaceSchema>;
@@ -132,3 +147,7 @@ export type CreateEventInput = z.infer<typeof createEventSchema>;
 export type UpdateEventInput = z.infer<typeof updateEventSchema>;
 export type CreateOrganizerInput = z.infer<typeof createOrganizerSchema>;
 export type UpdateOrganizerInput = z.infer<typeof updateOrganizerSchema>;
+
+// Auth type exports
+export type SignupInput = z.infer<typeof signupSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
