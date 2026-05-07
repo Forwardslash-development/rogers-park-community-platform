@@ -6,6 +6,7 @@ import {
   updateEventSchema,
   createOrganizerSchema,
   updateOrganizerSchema,
+  signupSchema,
 } from '../src/validation';
 import { EVENT_SOURCES, PLACE_TAGS, EVENT_TAGS, ACCESSIBILITY_FEATURES } from '../src/constants';
 
@@ -306,6 +307,32 @@ describe('Organizer Validation Schemas', () => {
       };
 
       const result = updateOrganizerSchema.safeParse(partialUpdate);
+      expect(result.success).toBe(true);
+    });
+  });
+});
+
+describe('Auth Validation Schemas', () => {
+  describe('signupSchema', () => {
+    it('should validate display_name minimum length', () => {
+      const tooShort = {
+        email: 'test@example.com',
+        password: 'password123',
+        display_name: 'A', // 1 char - should fail
+      };
+
+      const result = signupSchema.safeParse(tooShort);
+      expect(result.success).toBe(false);
+    });
+
+    it('should accept valid display_name length', () => {
+      const valid = {
+        email: 'test@example.com',
+        password: 'password123',
+        display_name: 'AB', // 2 chars - should pass
+      };
+
+      const result = signupSchema.safeParse(valid);
       expect(result.success).toBe(true);
     });
   });

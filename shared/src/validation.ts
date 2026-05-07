@@ -5,6 +5,7 @@ import {
   EVENT_TAGS,
   ACCESSIBILITY_FEATURES,
   VALIDATION_LIMITS,
+  VALIDATION_CONSTRAINTS,
 } from './constants';
 
 /**
@@ -131,8 +132,8 @@ export const signupSchema = z.object({
   password: z.string().min(8),
   display_name: z
     .string()
-    .min(VALIDATION_LIMITS.DISPLAY_NAME_MIN_LENGTH)
-    .max(VALIDATION_LIMITS.DISPLAY_NAME_MAX_LENGTH),
+    .min(VALIDATION_CONSTRAINTS.DISPLAY_NAME_MIN_LENGTH)
+    .max(VALIDATION_CONSTRAINTS.DISPLAY_NAME_MAX_LENGTH),
 });
 
 export const loginSchema = z.object({

@@ -8,13 +8,17 @@ test.describe('Authentication Flow', () => {
     await page.goto('/signup');
 
     const timestamp = Date.now();
-    
+
     await page.fill('input[name="display_name"]', 'Test User');
     await page.fill('input[name="email"]', `test${timestamp}@example.com`);
     await page.fill('input[name="password"]', 'TestPass123');
-    await page.click('button[type="submit"]');
-
-    await page.waitForURL('/dashboard', { timeout: 10000 });
+    
+    // Submit form and wait for navigation
+    await Promise.all([
+      page.waitForURL('/dashboard', { timeout: 10000 }),
+      page.click('button[type="submit"]')
+    ]);
+    
     await expect(page.locator('h2')).toContainText('Welcome');
   });
 
@@ -29,8 +33,11 @@ test.describe('Authentication Flow', () => {
     await page1.fill('input[name="display_name"]', 'Login Test');
     await page1.fill('input[name="email"]', email);
     await page1.fill('input[name="password"]', 'TestPass123');
-    await page1.click('button[type="submit"]');
-    await page1.waitForURL('/dashboard', { timeout: 10000 });
+    
+    await Promise.all([
+      page1.waitForURL('/dashboard', { timeout: 10000 }),
+      page1.click('button[type="submit"]')
+    ]);
     await context1.close();
 
     const context2 = await browser.newContext({ storageState: { cookies: [], origins: [] } });
@@ -39,8 +46,12 @@ test.describe('Authentication Flow', () => {
     await page2.goto('/login');
     await page2.fill('input[name="email"]', email);
     await page2.fill('input[name="password"]', 'TestPass123');
-    await page2.click('button[type="submit"]');
-    await page2.waitForURL('/dashboard', { timeout: 10000 });
+    
+    await Promise.all([
+      page2.waitForURL('/dashboard', { timeout: 10000 }),
+      page2.click('button[type="submit"]')
+    ]);
+    
     await expect(page2.locator('h2')).toContainText('Welcome');
     await context2.close();
   });
@@ -52,8 +63,11 @@ test.describe('Authentication Flow', () => {
     await page.fill('input[name="display_name"]', 'Logout Test');
     await page.fill('input[name="email"]', `logout${timestamp}@example.com`);
     await page.fill('input[name="password"]', 'TestPass123');
-    await page.click('button[type="submit"]');
-    await page.waitForURL('/dashboard', { timeout: 10000 });
+    
+    await Promise.all([
+      page.waitForURL('/dashboard', { timeout: 10000 }),
+      page.click('button[type="submit"]')
+    ]);
 
     await page.click('button[type="submit"]');
     await page.waitForURL('/');
@@ -90,11 +104,11 @@ test.describe('Authentication Flow', () => {
 
   test('should have forgot password link on login page', async ({ page }) => {
     await page.goto('/login');
-    
+
     const forgotPasswordLink = page.locator('a[href="/forgot-password"]');
     await expect(forgotPasswordLink).toBeVisible();
     await expect(forgotPasswordLink).toHaveText('Forgot Password?');
-    
+
     await forgotPasswordLink.click();
     await page.waitForURL('/forgot-password');
     await expect(page.locator('h1')).toContainText('Forgot Password');
