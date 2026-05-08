@@ -1,7 +1,8 @@
 import type * as Kit from '@sveltejs/kit';
 
 type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never;
-type MatcherParam<M> = M extends (param : string) => param is (infer U extends string) ? U : string;
+// @ts-ignore
+type MatcherParam<M> = M extends (param : string) => param is infer U ? U extends string ? U : string : string;
 type RouteParams = {  };
 type RouteId = '/logout';
 type MaybeWithVoid<T> = {} extends T ? T | void : T;
@@ -26,5 +27,5 @@ export type PageServerData = null;
 export type PageData = Expand<PageParentData>;
 export type Action<OutputData extends Record<string, any> | void = Record<string, any> | void> = Kit.Action<RouteParams, OutputData, RouteId>
 export type Actions<OutputData extends Record<string, any> | void = Record<string, any> | void> = Kit.Actions<RouteParams, OutputData, RouteId>
-export type PageProps = { params: RouteParams; data: PageData; form: ActionData }
+export type PageProps = { data: PageData; form: ActionData }
 export type RequestEvent = Kit.RequestEvent<RouteParams, RouteId>;

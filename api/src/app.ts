@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import authRoutes from '@/routes/auth';
+import testRoutes from '@/routes/test';
 import { testConnection } from '@/db/connection';
 import { successResponse } from '@/utils/response';
 
@@ -30,6 +31,9 @@ app.get('/api/v1/health', async (c) => {
 
 // Auth routes
 app.route('/api/v1/auth', authRoutes);
+
+// Test-only routes (blocked in production)
+app.route('/api/v1/test', testRoutes);
 
 // 404 handler
 app.notFound((c) => {

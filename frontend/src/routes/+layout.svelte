@@ -11,7 +11,7 @@
       {#if data.user}
         <a href="/dashboard">Dashboard</a>
         <form method="POST" action="/logout">
-          <button type="submit">Logout</button>
+          <button type="submit" data-testid="logout">Logout</button>
         </form>
       {:else}
         <a href="/login">Login</a>
