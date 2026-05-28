@@ -26,7 +26,7 @@
     "db:studio": "turbo run db:studio"
   },
   "devDependencies": {
-    "turbo": "^1.10.0"
+    "turbo": "^2.9.14"
   },
   "pnpm": {
     "overrides": {
