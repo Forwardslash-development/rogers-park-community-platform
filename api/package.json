@@ -22,7 +22,7 @@
     "@lucia-auth/adapter-drizzle": "^1.1.0",
     "@rogers-park/shared": "workspace:*",
     "argon2": "^0.40.1",
-    "drizzle-orm": "^0.30.10",
+    "drizzle-orm": "^0.45.2",
     "hono": "^4.2.9",
     "lucia": "^3.2.0",
     "nodemailer": "^8.0.7",
